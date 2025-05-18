@@ -30,4 +30,4 @@ steps:
     inputs:
       azureSubscription: 'AzureConnection'
       appName: 'spring-mvc-fiap-app'
-      package: '$(Pipeline.Workspace)/drop/*.war'
+      package: '$(Build.ArtifactStagingDirectory)/*.war'
