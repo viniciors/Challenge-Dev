@@ -42,12 +42,13 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
-// Desativa bootJar e ativa war
+// Desativa bootJar e gera apenas ROOT.war sem nome de projeto ou versão
 bootJar {
 	enabled = false
 }
 
 war {
 	enabled = true
+	archiveBaseName = ''
 	archiveFileName = 'ROOT.war'
 }
