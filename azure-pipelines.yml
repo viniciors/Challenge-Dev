@@ -21,7 +21,7 @@ jobs:
 
       - task: CopyFiles@2
         inputs:
-          contents: 'spring-mvc-fiap/build/libs/*.war'
+          contents: '**/build/libs/ROOT.war'
           targetFolder: '$(Build.ArtifactStagingDirectory)'
 
       - task: PublishBuildArtifacts@1
