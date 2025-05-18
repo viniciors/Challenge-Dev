@@ -7,29 +7,35 @@ pool:
 variables:
   artifactName: 'drop'
 
-steps:
-  - task: Gradle@3
-    inputs:
-      workingDirectory: 'spring-mvc-fiap'
-      gradleWrapperFile: 'spring-mvc-fiap/gradlew'
-      tasks: 'clean build'
-      publishJUnitResults: true
-      testResultsFiles: '**/TEST-*.xml'
+jobs:
+  - job: Build
+    displayName: 'Build and publish WAR'
+    steps:
+      - task: Gradle@3
+        inputs:
+          workingDirectory: 'spring-mvc-fiap'
+          gradleWrapperFile: 'spring-mvc-fiap/gradlew'
+          tasks: 'clean build'
+          publishJUnitResults: true
+          testResultsFiles: '**/TEST-*.xml'
 
-  - task: CopyFiles@2
-    inputs:
-      contents: 'spring-mvc-fiap/build/libs/*.war'
-      targetFolder: '$(Build.ArtifactStagingDirectory)'
+      - task: CopyFiles@2
+        inputs:
+          contents: 'spring-mvc-fiap/build/libs/*.war'
+          targetFolder: '$(Build.ArtifactStagingDirectory)'
 
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathToPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: '$(artifactName)'
+      - task: PublishBuildArtifacts@1
+        inputs:
+          pathToPublish: '$(Build.ArtifactStagingDirectory)'
+          artifactName: '$(artifactName)'
 
-  - download: current
-
-  - task: AzureWebApp@1
-    inputs:
-      azureSubscription: 'AzureConnection'
-      appName: 'spring-mvc-fiap-app'
-      package: '$(Pipeline.Workspace)/drop/*.war'
+  - job: Deploy
+    displayName: 'Deploy to Azure App Service'
+    dependsOn: Build
+    steps:
+      - download: current
+      - task: AzureWebApp@1
+        inputs:
+          azureSubscription: 'AzureConnection'
+          appName: 'spring-mvc-fiap-app'
+          package: '$(Pipeline.Workspace)/drop/*.war'
