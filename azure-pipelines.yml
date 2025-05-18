@@ -26,8 +26,10 @@ steps:
       pathToPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: '$(artifactName)'
 
+  - download: current
+
   - task: AzureWebApp@1
     inputs:
       azureSubscription: 'AzureConnection'
       appName: 'spring-mvc-fiap-app'
-      package: '$(Build.ArtifactStagingDirectory)/*.war'
+      package: '$(Pipeline.Workspace)/drop/*.war'
