@@ -34,8 +34,11 @@ jobs:
     dependsOn: Build
     steps:
       - download: current
+      - script: ls -R $(Pipeline.Workspace)  # Opcional para debug
       - task: AzureWebApp@1
         inputs:
           azureSubscription: 'AzureConnection'
           appName: 'spring-mvc-fiap-app'
-          package: '$(Pipeline.Workspace)/drop/*.war'
+          package: '$(Pipeline.Workspace)/**/*.war'
+
+
