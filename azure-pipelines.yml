@@ -39,7 +39,8 @@ jobs:
         inputs:
           azureSubscription: 'AzureConnection'
           appName: 'spring-mvc-fiap-app'
-          package: '$(Pipeline.Workspace)/**/*-0.0.1-SNAPSHOT.war'
+          package: '$(Pipeline.Workspace)/**/ROOT.war'
+
 
 
 
