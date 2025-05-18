@@ -1,5 +1,5 @@
 trigger:
-- main
+  - main
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -8,26 +8,26 @@ variables:
   artifactName: 'drop'
 
 steps:
-- task: Gradle@3
-  inputs:
-    workingDirectory: 'spring-mvc-fiap'
-    gradleWrapperFile: 'spring-mvc-fiap/gradlew'
-    tasks: 'clean build'
-    publishJUnitResults: true
-    testResultsFiles: '**/TEST-*.xml'
+  - task: Gradle@3
+    inputs:
+      workingDirectory: 'spring-mvc-fiap'
+      gradleWrapperFile: 'spring-mvc-fiap/gradlew'
+      tasks: 'clean build'
+      publishJUnitResults: true
+      testResultsFiles: '**/TEST-*.xml'
 
-- task: CopyFiles@2
-  inputs:
-    contents: 'spring-mvc-fiap/build/libs/*.war'
-    targetFolder: '$(Build.ArtifactStagingDirectory)'
+  - task: CopyFiles@2
+    inputs:
+      contents: 'spring-mvc-fiap/build/libs/*.war'
+      targetFolder: '$(Build.ArtifactStagingDirectory)'
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathToPublish: '$(Build.ArtifactStagingDirectory)'
-    artifactName: '$(artifactName)'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: '$(artifactName)'
 
-- task: AzureWebApp@1
-  inputs:
-    azureSubscription: 'AzureConnection'
-    appName: 'spring-mvc-fiap-app'
-    package: '$(Build.ArtifactStagingDirectory)/*.war'
+  - task: AzureWebApp@1
+    inputs:
+      azureSubscription: 'AzureConnection'
+      appName: 'spring-mvc-fiap-app'
+      package: '$(Pipeline.Workspace)/drop/*.war'
