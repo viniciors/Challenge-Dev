@@ -6,11 +6,16 @@ pool:
 
 variables:
   artifactName: 'drop'
+  resourceGroup: 'spring-rg'
+  webAppName: 'spring-mvc-fiap-app'
+  planName: 'spring-plan'
+  location: 'brazilsouth'
 
 jobs:
   - job: Build
     displayName: 'Build and publish WAR'
     steps:
+      # Etapa de build do projeto com Gradle
       - task: Gradle@3
         inputs:
           workingDirectory: 'spring-mvc-fiap'
@@ -19,28 +24,52 @@ jobs:
           publishJUnitResults: true
           testResultsFiles: '**/TEST-*.xml'
 
+      # Copia o arquivo ROOT.war para a pasta de artefatos
       - task: CopyFiles@2
         inputs:
           contents: '**/build/libs/ROOT.war'
           targetFolder: '$(Build.ArtifactStagingDirectory)'
 
+      # Publica o artefato para ser usado no deploy
       - task: PublishBuildArtifacts@1
         inputs:
           pathToPublish: '$(Build.ArtifactStagingDirectory)'
           artifactName: '$(artifactName)'
 
   - job: Deploy
-    displayName: 'Deploy to Azure App Service'
+    displayName: 'Create infra and deploy to Azure App Service'
     dependsOn: Build
     steps:
+      # Criação do grupo de recursos, plano de serviço e Web App
+      - task: AzureCLI@2
+        inputs:
+          azureSubscription: 'AzureConnection'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            echo "Criando grupo de recursos..."
+            az group create --name $(resourceGroup) --location $(location)
+
+            echo "Criando plano de serviço App Service (Linux)..."
+            az appservice plan create \
+              --name $(planName) \
+              --resource-group $(resourceGroup) \
+              --sku B1 \
+              --is-linux
+
+            echo "Criando Web App com runtime Java 17 + Tomcat..."
+            az webapp create \
+              --name $(webAppName) \
+              --resource-group $(resourceGroup) \
+              --plan $(planName) \
+              --runtime "JAVA|17-java17"
+
+      # Faz o download do artefato publicado no build
       - download: current
-      - script: ls -R $(Pipeline.Workspace)  # Opcional para debug
+
+      # Realiza o deploy do WAR no Web App
       - task: AzureWebApp@1
         inputs:
           azureSubscription: 'AzureConnection'
-          appName: 'spring-mvc-fiap-app'
+          appName: '$(webAppName)'
           package: '$(Pipeline.Workspace)/**/ROOT.war'
-
-
-
-
