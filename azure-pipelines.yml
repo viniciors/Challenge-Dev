@@ -15,7 +15,6 @@ jobs:
   - job: Build
     displayName: 'Build and publish WAR'
     steps:
-      # Etapa de build do projeto com Gradle
       - task: Gradle@3
         inputs:
           workingDirectory: 'spring-mvc-fiap'
@@ -24,13 +23,11 @@ jobs:
           publishJUnitResults: true
           testResultsFiles: '**/TEST-*.xml'
 
-      # Copia o arquivo ROOT.war para a pasta de artefatos
       - task: CopyFiles@2
         inputs:
           contents: '**/build/libs/ROOT.war'
           targetFolder: '$(Build.ArtifactStagingDirectory)'
 
-      # Publica o artefato para ser usado no deploy
       - task: PublishBuildArtifacts@1
         inputs:
           pathToPublish: '$(Build.ArtifactStagingDirectory)'
@@ -40,7 +37,6 @@ jobs:
     displayName: 'Create infra and deploy to Azure App Service'
     dependsOn: Build
     steps:
-      # Criação do grupo de recursos, plano de serviço e Web App
       - task: AzureCLI@2
         inputs:
           azureSubscription: 'AzureConnection'
@@ -57,17 +53,15 @@ jobs:
               --sku B1 \
               --is-linux
 
-            echo "Criando Web App com runtime Java 17 + Tomcat..."
+            echo "Criando Web App com runtime Java 21 + Tomcat..."
             az webapp create \
               --name $(webAppName) \
               --resource-group $(resourceGroup) \
               --plan $(planName) \
-              --runtime "JAVA|17-java17"
+              --runtime "JAVA|21-java21"
 
-      # Faz o download do artefato publicado no build
       - download: current
 
-      # Realiza o deploy do WAR no Web App
       - task: AzureWebApp@1
         inputs:
           azureSubscription: 'AzureConnection'
