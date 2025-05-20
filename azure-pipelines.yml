@@ -6,10 +6,6 @@ pool:
 
 variables:
   artifactName: 'drop'
-  resourceGroup: 'spring-rg'
-  webAppName: 'spring-mvc-fiap-app'
-  planName: 'spring-plan'
-  location: 'brazilsouth'
 
 jobs:
   - job: Build
@@ -34,36 +30,13 @@ jobs:
           artifactName: '$(artifactName)'
 
   - job: Deploy
-    displayName: 'Create infra and deploy to Azure App Service'
+    displayName: 'Deploy to Azure App Service'
     dependsOn: Build
     steps:
-      - task: AzureCLI@2
-        inputs:
-          azureSubscription: 'AzureConnection'
-          scriptType: 'bash'
-          scriptLocation: 'inlineScript'
-          inlineScript: |
-            echo "Criando grupo de recursos..."
-            az group create --name $(resourceGroup) --location $(location)
-
-            echo "Criando plano de serviço App Service (Linux)..."
-            az appservice plan create \
-              --name $(planName) \
-              --resource-group $(resourceGroup) \
-              --sku B1 \
-              --is-linux
-
-            echo "Criando Web App com runtime Java 21 + Tomcat..."
-            az webapp create \
-              --name $(webAppName) \
-              --resource-group $(resourceGroup) \
-              --plan $(planName) \
-              --runtime "JAVA|21-java21"
-
       - download: current
-
+      - script: ls -R $(Pipeline.Workspace)  # Opcional para debug
       - task: AzureWebApp@1
         inputs:
           azureSubscription: 'AzureConnection'
-          appName: '$(webAppName)'
+          appName: 'spring-mvc-fiap-app'
           package: '$(Pipeline.Workspace)/**/ROOT.war'
